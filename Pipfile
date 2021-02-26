@@ -9,6 +9,8 @@ black = "*"
 [packages]
 fastapi = "*"
 uvicorn = "*"
+requests = "*"
+marshmallow = "*"
 
 [requires]
 python_version = "3.8"
