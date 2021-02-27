@@ -1,8 +1,0 @@
-providers:
-  slack:
-    channels:
-      alerts: "https://slack.com/my/webhook"
-  twilio:
-    account_sid: "twilio-account-sid"
-    auth_token: "twilio-auth-token"
-    from_phone_number: "+15553156902"
