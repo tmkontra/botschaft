@@ -1,5 +1,7 @@
 # ![logo](docs/logo.png)
 
+Pronounced ["boat-shahft"](https://forvo.com/word/botschaft/)
+
 # What is botschaft?
 
 Botschaft is unified messaging & notifications appliance. Want to text yourself when a long-running task completes, but don't want to remember your account id or store credentials on your job server? Or maybe you want to send a slack message, a discord message, and an SNS message, all at once? Define a botschaft topic and hit it whenever you want.
