@@ -1,0 +1,12 @@
+[providers]
+    [providers.slack.channels]
+    alerts = "https://slack.com/fake/webhook"
+    [providers.aws.sns]
+    topic_arn = "arn:aws:sns:us-west-5:501468695000:fake-arn"
+    
+[[topics]]
+name = "my-great-topic"
+destinations = [
+    "slack.general",
+    "sns"
+]

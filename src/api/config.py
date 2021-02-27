@@ -1,11 +1,14 @@
+import json
 from os import getenv
 from typing import Mapping
 
 import boto3
 from marshmallow import Schema, fields, post_load
-import json
+from ruamel.yaml import YAML
+import toml
+
 from api.logger import get_logger
-from api.model import Topic
+from api.model import Topic, Provider
 
 from twilio.rest import Client
 
@@ -87,7 +90,10 @@ class Config:
             self.twilio_from_parameter = {}
         aws = providers.get("aws", {})
         self.sns_topic_arn = aws.get("sns", {}).get("topic_arn")
-        self.topics = self.load_topics(topics)
+        if topics:
+            self.topics = self.load_topics(topics)
+        else:
+            self.topics = {}
 
     def discord_channel(self, name):
         return self.discord.get("channels", {}).get(name)
@@ -98,8 +104,7 @@ class Config:
     def topic(self, name) -> Topic:
         return self.topics.get(name)
 
-    @staticmethod
-    def load_topics(topic_list):
+    def load_topics(self, topic_list):
         topics: Mapping[str, Topic] = {}
         for topic in topic_list:
             name = topic["name"]
@@ -108,13 +113,33 @@ class Config:
         providers = set(
             item for topic in topics.values() for item in topic.required_providers
         )
-        for provider in providers:
-            provider
+        self.check_providers(name, providers)
         return topics
 
     def parse_destination(self, destination):
         provider, *channel = destination.split(".")
         return provider, channel
+
+    def check_providers(self, name, required_providers):
+        for provider in required_providers:
+            if provider == Provider.SLACK and not self.slack:
+                raise ValueError(
+                    f"Provider '{provider}' not configured, required by topic '{name}'"
+                )
+            elif provider == Provider.DISCORD and not self.discord_channel:
+                raise ValueError(
+                    f"Provider '{provider}' not configured, required by topic '{name}'"
+                )
+            elif provider == Provider.TWILIO and not self.twilio:
+                raise ValueError(
+                    f"Provider '{provider}' not configured, required by topic '{name}'"
+                )
+            elif provider == Provider.SNS and not self.sns_topic_arn:
+                raise ValueError(
+                    f"Provider '{provider}' not configured, required by topic '{name}'"
+                )
+            else:
+                continue
 
     @staticmethod
     def twilio_from_parameter(twilio_config):
@@ -157,25 +182,38 @@ def manual_aws(aws):
 
 
 def load_config():
-    with open("botschaft.json", "r") as f:
-        conf = json.load(f)
-        providers = conf.get("providers", {})
-        aws = providers.get("aws", {})
-        if aws:
-            boto = None
-            profile_name = aws.get("profile")
-            boto = auto_aws(profile_name=profile_name)
-            if not boto:
-                boto = manual_aws(aws)
-            if not boto:
-                logger.exception("Unable to load AWS client")
-                raise ValueError("Unable to load AWS client!")
-        else:
-            boto = None
-        schema = BotschaftConfigSchema()
-        config = schema.load(conf)
-        config.boto = boto
-        return config
+    conf = _read_config()
+    if not conf:
+        raise FileNotFoundError("No botschaft configuration file found!")
+    providers = conf.get("providers", {})
+    aws = providers.get("aws", {})
+    if aws:
+        boto = None
+        profile_name = aws.get("profile")
+        boto = auto_aws(profile_name=profile_name)
+        if not boto:
+            boto = manual_aws(aws)
+        if not boto:
+            logger.exception("Unable to load AWS client")
+            raise ValueError("Unable to load AWS client!")
+    else:
+        boto = None
+    schema = BotschaftConfigSchema()
+    config = schema.load(conf)
+    config.boto = boto
+    return config
+
+
+def _read_config():
+    files = [(".json", json.load), (".yaml", YAML().load), (".toml", toml.load)]
+    for ext, load in files:
+        fn = f"botschaft{ext}"
+        try:
+            with open(fn, "r") as f:
+                conf = load(f)
+            return conf
+        except Exception as e:
+            continue
 
 
 _config = load_config()

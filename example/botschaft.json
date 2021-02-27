@@ -1,0 +1,38 @@
+{
+    "providers": {
+        "slack": {
+            "channels": {
+                "alerts": "https://hooks.slack.com/services/my/great/webhook",
+                "ci/cd": "https://hooks.slack.com/services/a/cicd/webhook"
+            }
+        },
+        "discord": {
+            "channels": {
+                "general": "https://discord.com/api/webhooks/id/secret-token"
+            }
+        },
+        "twilio": {
+            "account_sid": "twilio-account-sid",
+            "auth_token": "twilio-auth-token",
+            "from_phone_number": "+15553156902"
+        },
+        "aws": {
+            "access_key_id": "AKIOACCESSKEY",
+            "secret_access_key": "zkq7qYIHUasdf",
+            "region": "us-region-X",
+            "sns": {
+                "topic_arn": "arn:aws:sns:us-region-X:501420000011:my-sns-topic"
+            }
+        }
+    },
+    "topics": [
+        {
+            "name": "my-great-topic",
+            "destinations": [
+                "slack.alerts",
+                "twilio.5552443806",
+                "sns"
+            ]
+        }
+    ]
+}

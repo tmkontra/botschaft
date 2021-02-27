@@ -13,7 +13,9 @@ class SlackMessage:
         self.channel = channel
         channel_url = config.slack_channel(channel)
         if not channel_url:
-            raise ValueError(f"No slack channel '{channel}' configured")
+            raise HTTPException(
+                status_code=501, detail=f"No slack channel '{channel}' configured"
+            )
         self.channel_url = channel_url
         self.message = message
 
