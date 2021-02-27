@@ -13,6 +13,7 @@ uvicorn = "*"
 requests = "*"
 marshmallow = "*"
 twilio = "*"
+boto3 = "*"
 
 [requires]
 python_version = "3.8"

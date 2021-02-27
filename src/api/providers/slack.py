@@ -4,23 +4,29 @@ from typing import Optional
 from fastapi import Depends, HTTPException
 
 from api.config import get_config, Config
+from api.dependencies import message
 from api.http import Request
 
 
 class SlackMessage:
-    def __init__(self, channel, message, config):
+    def __init__(self, channel, message, config: Config):
         self.channel = channel
+        channel_url = config.slack_channel(channel)
+        if not channel_url:
+            raise ValueError(f"No slack channel '{channel}' configured")
+        self.channel_url = channel_url
         self.message = message
-        self.config = config
 
     def send(self):
         body = {"text": self.message}
-        g = Request(self.config.SLACK_WEBHOOK_URL, body=body)
+        g = Request(self.channel_url, body=body)
         print(f"Sending slack message '{self.message}' to #{self.channel}")
         try:
             resp = g.post()
-        except:
-            raise HTTPException(status_code=500)
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, detail="Unable to send slack message: %s" % e
+            )
 
 
 def can_slack(config: Config = Depends(get_config)):
@@ -32,17 +38,8 @@ def can_slack(config: Config = Depends(get_config)):
 
 def slack_message(
     channel: str,
-    message: Optional[str] = None,
-    base64_message: Optional[str] = None,
+    message=Depends(message),
     _slack=Depends(can_slack),
     config=Depends(get_config),
 ):
-    if message:
-        return SlackMessage(channel, message, config)
-    elif base64_message:
-        message = base64.b64decode(base64_message).decode("utf-8")
-        return SlackMessage(channel, message, config)
-    else:
-        raise HTTPException(
-            status_code=422, detail="Must provide one of 'message', 'base64_message'"
-        )
+    return SlackMessage(channel, message, config)

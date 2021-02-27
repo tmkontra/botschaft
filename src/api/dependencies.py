@@ -18,3 +18,11 @@ def authorize(
         raise HTTPException(status_code=401)
     else:
         return True
+
+
+def message(message: Optional[str] = None, base64_message: Optional[str] = None):
+    if message:
+        return message
+    elif base64_message:
+        message = base64.b64decode(base64_message).decode("utf-8")
+        return message
