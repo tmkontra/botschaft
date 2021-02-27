@@ -1,7 +1,7 @@
 import requests
 
 
-class Gateway:
+class Request:
     def __init__(self, url, headers=None, body=None):
         self.url = url
         self.headers = headers

@@ -3,8 +3,8 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException
 
-from .config import get_config, Config
-from .gateway import Gateway
+from api.config import get_config, Config
+from api.http import Request
 
 
 class DiscordMessage:
@@ -21,7 +21,7 @@ class DiscordMessage:
                 status_code=501,
                 detail=f"Discord channel '{self.channel}' not configured",
             )
-        g = Gateway(url, body=body)
+        g = Request(url, body=body)
         print(f"Sending discord message '{self.message}' to #{self.channel}")
         try:
             resp = g.post()

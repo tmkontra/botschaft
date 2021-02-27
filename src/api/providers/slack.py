@@ -3,8 +3,8 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException
 
-from .config import get_config, Config
-from .gateway import Gateway
+from api.config import get_config, Config
+from api.http import Request
 
 
 class SlackMessage:
@@ -15,7 +15,7 @@ class SlackMessage:
 
     def send(self):
         body = {"text": self.message}
-        g = Gateway(self.config.SLACK_WEBHOOK_URL, body=body)
+        g = Request(self.config.SLACK_WEBHOOK_URL, body=body)
         print(f"Sending slack message '{self.message}' to #{self.channel}")
         try:
             resp = g.post()
@@ -24,7 +24,7 @@ class SlackMessage:
 
 
 def can_slack(config: Config = Depends(get_config)):
-    if config.SLACK_WEBHOOK_URL:
+    if config.slack:
         return True
     else:
         raise HTTPException(status_code=501, detail="Slack API not configured")

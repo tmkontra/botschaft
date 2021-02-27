@@ -5,12 +5,14 @@ verify_ssl = true
 
 [dev-packages]
 black = "*"
+rope = "*"
 
 [packages]
 fastapi = "*"
 uvicorn = "*"
 requests = "*"
 marshmallow = "*"
+twilio = "*"
 
 [requires]
 python_version = "3.8"
