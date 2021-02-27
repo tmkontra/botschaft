@@ -1,0 +1,11 @@
+version: "3.4"
+   
+services:
+  botschaft:
+    image: ttymck/botschaft:alpha
+    volumes:
+      - type: bind
+        source: ./botschaft.yaml
+        target: /botschaft.yaml
+    ports:
+      - 8000:8000
