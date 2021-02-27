@@ -94,6 +94,7 @@ class Config:
             self.topics = self.load_topics(topics)
         else:
             self.topics = {}
+        self.provider_info = self.providers_available(self)
 
     def discord_channel(self, name):
         return self.discord.get("channels", {}).get(name)
@@ -151,6 +152,21 @@ class Config:
             raise ValueError(
                 "One of 'twilio.message_service_sid' or 'twilio.from_phone_number' must be provided!"
             )
+
+    @staticmethod
+    def providers_available(self) -> list:
+        provider_checks = [
+            (self.slack, Provider.SLACK, lambda: list(self.slack['channels'].keys())),
+            (self.discord, Provider.DISCORD, lambda: list(self.discord['channels'].keys())),
+            (self.twilio_from_parameter, Provider.TWILIO, lambda: {"from": list(self.twilio_from_parameter.values())[0]}),
+            (self.sns_topic_arn, Provider.SNS, lambda: True)
+        ]
+        providers = {}
+        for check, provider, cfg in provider_checks:
+            if check:
+                print("provider", provider, "=", cfg())
+                providers[provider] = cfg()
+        return providers
 
 
 def auto_aws(profile_name):

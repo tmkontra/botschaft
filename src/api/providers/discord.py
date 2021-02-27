@@ -5,6 +5,10 @@ from fastapi import Depends, HTTPException
 
 from api.config import get_config, Config
 from api.http import Request
+from api.logger import get_logger
+
+
+logger = get_logger(__name__)
 
 
 class DiscordMessage:
@@ -22,7 +26,7 @@ class DiscordMessage:
                 detail=f"Discord channel '{self.channel}' not configured",
             )
         g = Request(url, body=body)
-        print(f"Sending discord message '{self.message}' to #{self.channel}")
+        logger.debug(f"Sending discord message '{self.message}' to #{self.channel}")
         try:
             resp = g.post()
             return True

@@ -10,6 +10,7 @@ from api.providers.discord import discord_message, DiscordMessage
 from api.providers.twilio import twilio_message, TwilioMessage
 from api.providers.sns import sns_message, SnsMessage
 from api.dependencies import authorize, message
+from api import schemas
 
 
 api = FastAPI(
@@ -68,3 +69,7 @@ def topic(
                 status_code=400, detail=f"Unsupported provider '{provider}'"
             )
     return f"Sent {message} to topic '{topic_name}'"
+
+@api.get("/config", response_model=schemas.Config)
+def config(config: Config = Depends(get_config)):
+    return schemas.config_to_response(config)

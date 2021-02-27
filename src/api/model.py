@@ -3,10 +3,10 @@ from typing import List
 
 
 class Provider(Enum):
-    SLACK = 1
-    DISCORD = 2
-    TWILIO = 3
-    SNS = 4
+    SLACK = "slack"
+    DISCORD = "discord"
+    TWILIO = "twilio"
+    SNS = "sns"
 
     @classmethod
     def from_string(cls, provider):

@@ -4,6 +4,10 @@ from fastapi import Depends, HTTPException
 from twilio.rest import Client
 
 from api.config import Config, get_config
+from api.logger import get_logger
+
+
+logger = get_logger(__name__)
 
 
 class TwilioMessage:
@@ -19,7 +23,7 @@ class TwilioMessage:
                 to=self.to, body=self.message, **self.config.twilio_from_parameter
             )
             if resp.error_code:
-                print(
+                logger.error(
                     f"Twilio failed to send message '{self.message}' to '{self.to}', error_code={resp.error_code} error_message={resp.error_message}"
                 )
                 raise HTTPException(
@@ -27,10 +31,10 @@ class TwilioMessage:
                     detail=f"Twilio SMS failed with error code {resp.error_code}",
                 )
             else:
-                print(f"Twilio sent message sid {resp.sid}")
+                logger.debug(f"Twilio sent message sid {resp.sid}")
                 return True
         except Exception as e:
-            print(f"Twilio API failure: {e}")
+            logger.exception(f"Twilio API failure")
             raise HTTPException(status_code=500, detail="Twilio API failure")
 
 
