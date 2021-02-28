@@ -7,8 +7,9 @@ from api.config import get_config, Config
 from api.dependencies import message
 from api.http import Request
 from api.logger import get_logger
+from api.model import Provider
 from api.schemas import MessageRequest
-
+from .message import Message
 
 logger = get_logger(__name__)
 
@@ -17,7 +18,9 @@ class SlackMessageRequest(MessageRequest):
     channel: str
 
 
-class SlackMessage:
+class SlackMessage(Message):
+    provider = Provider.SLACK
+
     def __init__(self, channel, message, config: Config):
         self.channel = channel
         channel_url = config.slack_channel(channel)
@@ -31,9 +34,10 @@ class SlackMessage:
     def send(self):
         body = {"text": self.message}
         g = Request(self.channel_url, body=body)
-        logger.debug(f"Sending slack message '{self.message}' to #{self.channel}")
+        self.log_message(self.message, self.channel)
         try:
             resp = g.post()
+            self.log_sent(self.message, self.channel)
         except Exception as e:
             raise HTTPException(
                 status_code=500, detail="Unable to send slack message: %s" % e

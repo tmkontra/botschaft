@@ -26,6 +26,8 @@ class MessageRequest(BaseModel):
     message: Optional[str]
     base64_message: Optional[str]
 
+    provider: Provider
+
     def get_message(self):
         if self.message:
             return self.message

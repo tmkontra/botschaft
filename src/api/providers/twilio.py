@@ -8,7 +8,9 @@ from twilio.rest import Client
 from api.config import Config, get_config
 from api.dependencies import message
 from api.logger import get_logger
+from api.model import Provider
 from api.schemas import MessageRequest
+from .message import Message
 
 logger = get_logger(__name__)
 
@@ -17,7 +19,9 @@ class TwilioMessageRequest(MessageRequest):
     to: str
 
 
-class TwilioMessage:
+class TwilioMessage(Message):
+    provider = Provider.TWILIO
+
     def __init__(self, to_phone_number: str, message: str, config: Config):
         self.to = to_phone_number
         self.message = message
@@ -26,6 +30,7 @@ class TwilioMessage:
     def send(self):
         client: Client = self.config.twilio
         try:
+            self.log_message(self.message, self.to)
             resp = client.messages.create(
                 to=self.to, body=self.message, **self.config.twilio_from_parameter
             )
@@ -38,7 +43,9 @@ class TwilioMessage:
                     detail=f"Twilio SMS failed with error code {resp.error_code}",
                 )
             else:
-                logger.debug(f"Twilio sent message sid {resp.sid}")
+                self.log_sent(
+                    self.message, self.channel, extra_info=f"message sid = {resp.sid}"
+                )
                 return True
         except Exception as e:
             logger.exception(f"Twilio API failure")

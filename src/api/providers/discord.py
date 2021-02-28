@@ -7,7 +7,9 @@ from api.config import get_config, Config
 from api.dependencies import message
 from api.http import Request
 from api.logger import get_logger
+from api.model import Provider
 from api.schemas import MessageRequest
+from .message import Message
 
 
 logger = get_logger(__name__)
@@ -17,7 +19,9 @@ class DiscordMessageRequest(MessageRequest):
     channel: str
 
 
-class DiscordMessage:
+class DiscordMessage(Message):
+    provider = Provider.DISCORD
+
     def __init__(self, channel, message, config: Config):
         self.channel = channel
         self.message = message
@@ -32,9 +36,10 @@ class DiscordMessage:
                 detail=f"Discord channel '{self.channel}' not configured",
             )
         g = Request(url, body=body)
-        logger.debug(f"Sending discord message '{self.message}' to #{self.channel}")
+        self.log_message(self.message, self.channel)
         try:
             resp = g.post()
+            self.log_sent(self.message, self.channel)
             return True
         except:
             raise HTTPException(status_code=500)

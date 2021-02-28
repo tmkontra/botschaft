@@ -7,14 +7,18 @@ from fastapi_utils.api_model import APIModel
 
 from api.config import Config, get_config
 from api.dependencies import message
+from api.model import Provider
 from api.schemas import MessageRequest
+from .message import Message
 
 
 class SnsMessageRequest(MessageRequest):
     pass
 
 
-class SnsMessage:
+class SnsMessage(Message):
+    provider = Provider.SNS
+
     def __init__(self, message, config: Config):
         self.message = message
         self.config = config
@@ -22,7 +26,9 @@ class SnsMessage:
     def send(self):
         client = self.config.boto.client("sns")
         try:
+            self.log_message(self.message)
             client.publish(Message=self.message, TopicArn=self.config.sns_topic_arn)
+            self.log_sent(self.message, self.channel)
         except boto3.exceptions.Boto3Error:
             raise HTTPException(status_code=500, detail="Failed to send SNS message")
 

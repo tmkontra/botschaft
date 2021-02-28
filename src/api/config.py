@@ -90,11 +90,13 @@ class Config:
             self.twilio_from_parameter = {}
         aws = providers.get("aws", {})
         self.sns_topic_arn = aws.get("sns", {}).get("topic_arn")
+        self.provider_info = self.providers_available(self)
+        logger.debug("Startup with providers: %s" % list(self.provider_info.keys()))
         if topics:
             self.topics = self.load_topics(topics)
+            logger.debug("Loaded topics: %s" % list(self.topics.keys()))
         else:
             self.topics = {}
-        self.provider_info = self.providers_available(self)
 
     def discord_channel(self, name):
         return self.discord.get("channels", {}).get(name)
@@ -106,11 +108,13 @@ class Config:
         return self.topics.get(name)
 
     def load_topics(self, topic_list):
-        topics: Mapping[str, Topic] = {}
+        topics = []
         for topic in topic_list:
             name = topic["name"]
             destinations = topic["destinations"]
-            topics[name] = Topic(name, destinations)
+            topics.append(Topic(name, destinations))
+        topics = set(topics)
+        topics = {t.name: t for t in topics}
         providers = set(
             item for topic in topics.values() for item in topic.required_providers
         )
@@ -172,7 +176,6 @@ class Config:
         providers = {}
         for check, provider, cfg in provider_checks:
             if check:
-                print("provider", provider, "=", cfg())
                 providers[provider] = cfg()
         return providers
 
@@ -182,9 +185,9 @@ def auto_aws(profile_name):
         logger.debug(f"Trying aws creds, profile={profile_name}")
         boto = boto3.Session(profile_name=profile_name)
         boto.client("sts").get_caller_identity()
-        logger.info("Loaded aws session")
+        logger.debug("Loaded aws session")
     except boto3.exceptions.Boto3Error:
-        logger.exception("No automatic boto")
+        logger.info("No automatic boto")
         boto = None
     return boto
 
@@ -218,7 +221,6 @@ def load_config():
         if not boto:
             boto = manual_aws(aws)
         if not boto:
-            logger.exception("Unable to load AWS client")
             raise ValueError("Unable to load AWS client!")
     else:
         boto = None

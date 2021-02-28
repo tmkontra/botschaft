@@ -12,12 +12,14 @@ class Request:
         self.body = body
 
     def get(self):
+        logger.debug(f"Making request to GET {self.url}")
         resp = requests.get(self.url, headers=self.headers)
         logger.debug(f"GET {self.url} returned {resp.status_code}")
         resp.raise_for_status()
         return resp
 
     def post(self):
+        logger.debug(f"Making request to POST {self.url} with body {self.body}")
         resp = requests.post(self.url, json=self.body, headers=self.headers)
         logger.debug(f"POST {self.url} returned {resp.status_code}")
         resp.raise_for_status()
