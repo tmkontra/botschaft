@@ -16,6 +16,7 @@ twilio = "*"
 boto3 = "*"
 "ruamel.yaml" = "*"
 toml = "*"
+fastapi-utils = "*"
 
 [requires]
 python_version = "3.8"

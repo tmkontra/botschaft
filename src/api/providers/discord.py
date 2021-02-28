@@ -1,14 +1,20 @@
-import base64
 from typing import Optional
 
-from fastapi import Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi_utils.cbv import cbv
 
 from api.config import get_config, Config
+from api.dependencies import message
 from api.http import Request
 from api.logger import get_logger
+from api.schemas import MessageRequest
 
 
 logger = get_logger(__name__)
+
+
+class DiscordMessageRequest(MessageRequest):
+    channel: str
 
 
 class DiscordMessage:
@@ -41,19 +47,22 @@ def can_discord(config: Config = Depends(get_config)):
         raise HTTPException(status_code=501, detail="Discord API not configured")
 
 
-def discord_message(
-    channel: str,
-    message: Optional[str] = None,
-    base64_message: Optional[str] = None,
-    _discord=Depends(can_discord),
-    config=Depends(get_config),
-):
-    if message:
-        return DiscordMessage(channel, message, config)
-    elif base64_message:
-        message = base64.b64decode(base64_message).decode("utf-8")
-        return DiscordMessage(channel, message, config)
-    else:
-        raise HTTPException(
-            status_code=422, detail="Must provide one of 'message', 'base64_message'"
-        )
+discord_router = APIRouter()
+
+
+@cbv(discord_router)
+class DiscordAPI:
+    _discord = Depends(can_discord)
+    config: Config = Depends(get_config)
+
+    @discord_router.get("/discord")
+    def discord_get(self, channel: str, message: str = Depends(message)):
+        discord = DiscordMessage(channel, message, self.config)
+        discord.send()
+        return f"Sent '{discord.message}' to #{discord.channel}"
+
+    @discord_router.post("/discord")
+    def discord_post(self, request: DiscordMessageRequest):
+        discord = DiscordMessage(request.channel, request.message, self.config)
+        discord.send()
+        return f"Sent '{discord.message}' to #{discord.channel}"

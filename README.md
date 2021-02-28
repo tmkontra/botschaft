@@ -33,6 +33,8 @@ All providers are supported out of the box, and are enabled by specifying the co
 
 Topics are custom groups of provider destinations for a single message, for instance: Slack #alerts + Discord #general.
 
+Botschaft optionally supports bearer token authentication, configured by setting the `BOTSCHAFT__ACCESS_TOKEN` environment variable. **When that variable is not set, the API is unauthenticated**.
+
 ## Botschaft Config File
 
 The botschaft config file can be defined as `json`, `yaml` or `toml`. Any combination of providers can be defined.
@@ -52,11 +54,23 @@ To start a botschaft instance, define your config file and start the container l
 
 > docker run -v /path/to/my/botschaft.toml:/botschaft.toml -p8000:8000 -it ttymck/botschaft:latest
 
-[docker-compose example coming soon]
+Or use docker-compose, like the [example here](/example/docker-compose.yaml)
 
 # Web API Reference
 
-Coming soon.
+A running botschaft instance provides OpenAPI docs at `${botschaft-uri}/docs`
 
-(A running botschaft instance provides OpenAPI docs at `${botschaft-uri}/docs`)
+## Message
+
+Every route takes a `message`, which can be given by the `message` or `message_base64` parameter (if both are set, `message` is used). `message_base64` will first be base64 decoded before being sent.
+
+## Provider parameters
+
+Each provider may take further parameters, generally to indicate the specific destination channel (Slack channel, SMS phone number, etc). These may correspond to the provider configuration
+
+- Slack: `channel`
+- Discord: `channel`
+- Twilio: `to`
+- Sns: `null`
+
 

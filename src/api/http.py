@@ -4,6 +4,7 @@ from api.logger import get_logger
 
 logger = get_logger(__name__)
 
+
 class Request:
     def __init__(self, url, headers=None, body=None):
         self.url = url

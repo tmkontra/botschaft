@@ -1,15 +1,20 @@
-import base64
 from typing import Optional
 
-from fastapi import Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi_utils.cbv import cbv
 
 from api.config import get_config, Config
 from api.dependencies import message
 from api.http import Request
 from api.logger import get_logger
+from api.schemas import MessageRequest
 
 
 logger = get_logger(__name__)
+
+
+class SlackMessageRequest(MessageRequest):
+    channel: str
 
 
 class SlackMessage:
@@ -42,10 +47,22 @@ def can_slack(config: Config = Depends(get_config)):
         raise HTTPException(status_code=501, detail="Slack API not configured")
 
 
-def slack_message(
-    channel: str,
-    message=Depends(message),
-    _slack=Depends(can_slack),
-    config=Depends(get_config),
-):
-    return SlackMessage(channel, message, config)
+slack_router = APIRouter()
+
+
+@cbv(slack_router)
+class SlackAPI:
+    _slack = Depends(can_slack)
+    config: Config = Depends(get_config)
+
+    @slack_router.get("/slack")
+    def slack_get(self, channel: str, message=Depends(message)):
+        slack = SlackMessage(channel, message, self.config)
+        slack.send()
+        return f"Sent '{message}' to '{channel}'"
+
+    @slack_router.post("/slack")
+    def slack_post(self, request: SlackMessageRequest):
+        slack = SlackMessage(request.channel, request.get_message(), self.config)
+        slack.send()
+        return f"Sent '{slack.message}' to '{slack.channel}'"
