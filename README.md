@@ -60,6 +60,8 @@ Or use docker-compose, like the [example here](/example/docker-compose.yaml)
 
 A running botschaft instance provides OpenAPI docs at `${botschaft-uri}/docs`
 
+You can view a copy of the OpenAPI docs here: [mrindoc viewer](https://mrin9.github.io/OpenAPI-Viewer/#/load/https%3A%2F%2Fraw.githubusercontent.com%2Fttymck%2Fbotschaft%2Fmaster%2Fexample%2Fopenapi.json)
+
 ## Routes
 
 Every provider exposes a `GET` and a `POST` route, accepting the `message` and any other provider-specific parameters (see below) as either query parameters or a json body, respectively. The behavior of the `GET` and `POST` are identical, you are free to use either one based on personal perference (or, if your messages are too long for URLs, the `POST` will accomodate them).
