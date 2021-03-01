@@ -28,7 +28,7 @@ class SnsMessage(Message):
         try:
             self.log_message(self.message)
             client.publish(Message=self.message, TopicArn=self.config.sns_topic_arn)
-            self.log_sent(self.message, self.channel)
+            self.log_sent(self.message, self.config.sns_topic_arn)
         except boto3.exceptions.Boto3Error:
             raise HTTPException(status_code=500, detail="Failed to send SNS message")
 

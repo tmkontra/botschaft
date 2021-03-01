@@ -16,6 +16,8 @@ _env_prefix = "BOTSCHAFT__"
 
 logger = get_logger(__name__)
 
+TEST_CONFIG = getenv("BOTSCHAFT__TEST_CONFIG")
+
 
 def get_environment_variable(name: str, required=False):
     var_name = f"{_env_prefix}__{name}"
@@ -68,15 +70,11 @@ class BotschaftConfigSchema(Schema):
     providers = fields.Nested(ProvidersConfigSchema, required=True)
     topics = fields.List(fields.Nested(TopicConfigSchema), required=False)
 
-    @post_load
-    def make_config(self, data, **kwargs):
-        return Config(providers=data.get("providers"), topics=data.get("topics"))
-
 
 class Config:
     boto: boto3.Session
 
-    def __init__(self, providers, topics):
+    def __init__(self, providers, topics, boto=None):
         self.ACCESS_TOKEN = get_environment_variable("ACCESS_TOKEN")
         self.discord = providers.get("discord", {})
         self.slack = providers.get("slack", {})
@@ -97,6 +95,19 @@ class Config:
             logger.debug("Loaded topics: %s" % list(self.topics.keys()))
         else:
             self.topics = {}
+        if aws and boto is None:
+            boto = None
+            profile_name = aws.get("profile")
+            boto = auto_aws(profile_name=profile_name)
+            if not boto:
+                boto = manual_aws(aws)
+            if not boto:
+                raise ValueError("Unable to load AWS client!")
+            self.boto = boto
+        elif aws:
+            self.boto = boto
+        else:
+            self.boto = None
 
     def discord_channel(self, name):
         return self.discord.get("channels", {}).get(name)
@@ -212,22 +223,9 @@ def load_config():
     conf = _read_config()
     if not conf:
         raise FileNotFoundError("No botschaft configuration file found!")
-    providers = conf.get("providers", {})
-    aws = providers.get("aws", {})
-    if aws:
-        boto = None
-        profile_name = aws.get("profile")
-        boto = auto_aws(profile_name=profile_name)
-        if not boto:
-            boto = manual_aws(aws)
-        if not boto:
-            raise ValueError("Unable to load AWS client!")
-    else:
-        boto = None
     schema = BotschaftConfigSchema()
     config = schema.load(conf)
-    config.boto = boto
-    return config
+    return Config(providers=config.get("providers"), topics=config.get("topics"))
 
 
 def _read_config():
