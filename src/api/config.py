@@ -84,7 +84,7 @@ class Config:
         if twilio:
             client = Client(twilio["account_sid"], twilio["auth_token"])
             self.twilio = client
-            self.twilio_from_parameter = self.twilio_from_parameter(twilio)
+            self.twilio_from_parameter = self.parse_twilio_from_parameter(twilio)
         else:
             self.twilio = None
             self.twilio_from_parameter = {}
@@ -147,7 +147,7 @@ class Config:
                 continue
 
     @staticmethod
-    def twilio_from_parameter(twilio_config):
+    def parse_twilio_from_parameter(twilio_config):
         if twilio_config.get("messaging_service_sid"):
             return dict(messaging_service_sid=twilio_config["messaging_service_sid"])
         elif twilio_config.get("from_phone_number"):

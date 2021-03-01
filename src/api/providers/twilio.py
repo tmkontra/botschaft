@@ -26,9 +26,10 @@ class TwilioMessage(Message):
         self.to = to_phone_number
         self.message = message
         self.config = config
+        self.client = config.twilio
 
     def send(self):
-        client: Client = self.config.twilio
+        client: Client = self.client
         try:
             self.log_message(self.message, self.to)
             resp = client.messages.create(
@@ -44,7 +45,7 @@ class TwilioMessage(Message):
                 )
             else:
                 self.log_sent(
-                    self.message, self.channel, extra_info=f"message sid = {resp.sid}"
+                    self.message, self.to, extra_info=f"message sid = {resp.sid}"
                 )
                 return True
         except Exception as e:

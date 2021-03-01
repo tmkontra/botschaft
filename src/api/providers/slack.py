@@ -5,7 +5,7 @@ from fastapi_utils.cbv import cbv
 
 from api.config import get_config, Config
 from api.dependencies import message
-from api.http import Request
+from api.http import HTTPRequest
 from api.logger import get_logger
 from api.model import Provider
 from api.schemas import MessageRequest
@@ -33,7 +33,7 @@ class SlackMessage(Message):
 
     def send(self):
         body = {"text": self.message}
-        g = Request(self.channel_url, body=body)
+        g = HTTPRequest(self.channel_url, body=body)
         self.log_message(self.message, self.channel)
         try:
             resp = g.post()
