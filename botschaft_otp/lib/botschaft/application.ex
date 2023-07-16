@@ -15,15 +15,21 @@ defmodule Botschaft.Application do
       # Start Finch
       {Finch, name: Botschaft.Finch},
       # Start the Endpoint (http/https)
-      BotschaftWeb.Endpoint
+      BotschaftWeb.Endpoint,
       # Start a worker by calling: Botschaft.Worker.start_link(arg)
       # {Botschaft.Worker, arg}
+      Botschaft.Config,
+      Botschaft.Providers.child_spec([[name: Botschaft.Providers.Supervisor]]),
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Botschaft.Supervisor]
-    Supervisor.start_link(children, opts)
+    # start children
+    sup = Supervisor.start_link(children, opts)
+    # set config reload handler
+    System.trap_signal(:sighup, &Botschaft.Providers.reload_config/0)
+    sup
   end
 
   # Tell Phoenix to update the endpoint configuration
@@ -33,4 +39,5 @@ defmodule Botschaft.Application do
     BotschaftWeb.Endpoint.config_change(changed, removed)
     :ok
   end
+
 end
