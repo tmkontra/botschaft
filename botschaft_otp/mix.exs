@@ -49,7 +49,8 @@ defmodule Botschaft.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:vapor, "~> 0.10"},
       {:req, "~> 0.3.0"},
-      {:solid, "~> 0.14"}
+      {:solid, "~> 0.14"},
+      {:recase, "~> 0.5"}
     ]
   end
 

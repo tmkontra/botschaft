@@ -26,4 +26,10 @@ defmodule Botschaft.Providers do
     end
     :ok
   end
+
+  def send_message(provider, destination, message_text) when is_binary(provider) and is_binary(destination) and is_binary(message_text) do
+    pmod = Recase.to_title(provider)
+    module = String.to_existing_atom("Elixir.Botschaft.Providers.#{pmod}")
+    apply(module, :send, [destination, message_text])
+  end
 end

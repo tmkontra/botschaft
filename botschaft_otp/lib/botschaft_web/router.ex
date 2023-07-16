@@ -8,16 +8,77 @@ defmodule BotschaftWeb.Router do
     plug :put_root_layout, html: {BotschaftWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug :authenticate
   end
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug :authenticate
+  end
+
+  pipeline :admin do
+    plug :require_admin, :denied
+  end
+
+  defp authenticate(conn, _opts) do
+    # admin already logged in
+    case get_session(conn, :admin) do
+      nil ->
+        # check headers if auth is required
+        case Botschaft.Config.require_auth do
+          {:required, %{admin: admin_token, user: user_token}} = c ->
+            IO.puts "auth required: #{inspect c}"
+            case get_req_header(conn, "authorization") do
+              ["Bearer " <> ^admin_token] ->
+                conn
+                |> assign(:admin, true)
+                |> assign(:authenticated, true)
+              ["Bearer " <> ^user_token] ->
+                conn
+                |> assign(:authenticated, true)
+              _ -> conn
+            end
+          _ ->
+            IO.puts "no auth required"
+            conn
+            |> assign(:admin, true)
+            |> assign(:authenticated, true)
+        end
+      _ -> conn
+      |> assign(:admin, true)
+      |> assign(:authenticated, true)
+    end
+  end
+
+  defp require_admin(conn, denied) do
+    if conn.assigns[:admin] do
+      conn
+    else
+      conn
+      |> put_flash(:error, "You are not authorized to access this page.")
+      |> redirect(to: BotschaftWeb.Router.Helpers.admin_path(conn, denied))
+      |> halt()
+    end
   end
 
   scope "/", BotschaftWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    get "/", IndexController, :index
+
+    scope "/admin" do
+      get "/auth", AdminController, :denied
+
+      scope "" do
+        pipe_through :admin
+
+        get "/", AdminController, :home
+
+        post "/auth", AdminController, :login
+
+        post "/message", AdminController, :send_message
+      end
+    end
   end
 
   # Other scopes may use custom stacks.

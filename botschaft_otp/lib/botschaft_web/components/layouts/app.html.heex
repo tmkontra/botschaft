@@ -2,13 +2,10 @@
   <div class="flex items-center justify-between border-b border-zinc-100 py-3 text-sm">
     <div class="flex items-center gap-4">
       <a href="/">
-        <img src={~p"/images/logo.svg"} width="36" />
+        <img src="https://raw.githubusercontent.com/tmkontra/botschaft/master/docs/logo.png" style="max-height: 45px"/>
       </a>
-      <p class="bg-brand/5 text-brand rounded-full px-2 font-medium leading-6">
-        v<%= Application.spec(:phoenix, :vsn) %>
-      </p>
     </div>
-    <div class="flex items-center gap-4 font-semibold leading-6 text-zinc-900">
+    <div class="flex items-center gap-4 font-semibold leading-6 text-zinc-900" style="display: none">
       <a href="https://twitter.com/elixirphoenix" class="hover:text-zinc-700">
         @elixirphoenix
       </a>

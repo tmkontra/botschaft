@@ -10,10 +10,6 @@ defmodule Botschaft.Providers.Telegram do
     GenServer.start_link(__MODULE__, %{config: config, get_config: get_config}, name: __MODULE__)
   end
 
-  def get_config() do
-    GenServer.call(__MODULE__, :get_config)
-  end
-
   def reload_config() do
     GenServer.cast(__MODULE__, :reload)
   end

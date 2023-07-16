@@ -14,6 +14,31 @@ defmodule Botschaft.Config do
     Agent.get(__MODULE__, fn config -> get_provider_from(config, id) end)
   end
 
+  def get_destinations() do
+    getter = fn config ->
+      raw = config.providers
+      for {provider, dests} <- raw do
+        {provider, Map.keys(dests)}
+      end
+    end
+    Agent.get(__MODULE__, getter)
+  end
+
+  def require_auth() do
+    getter = fn config ->
+      auth_config = Map.get(config, :auth, %{}) || %{}
+      admin = Map.get(auth_config, :admin_token, nil)
+      user = Map.get(auth_config, :user_token, nil)
+      case [admin, user] do
+        [nil, nil] ->
+          :not_required
+        [admin_token, user_token] ->
+          {:required, %{admin: admin_token, user: user_token}}
+      end
+    end
+    Agent.get(__MODULE__, getter)
+  end
+
   defp load() do
     base_env = [
       {:config_dir, "BOTSCHAFT_CONFIG_DIR", default: "./botschaft.d"}
@@ -23,7 +48,14 @@ defmodule Botschaft.Config do
     config_file = Path.join(base_config.config_dir, "botschaft.toml")
     providers = [
       %Provider.Env{},
-      %Provider.File{path: config_file, bindings: [providers: "providers", vars: "vars"]},
+      %Provider.File{
+        path: config_file,
+        bindings: [
+          {:auth, "auth", required: false},
+          providers: "providers",
+          vars: "vars",
+        ]
+      },
     ]
 
     # If values could not be found we raise an exception and halt the boot
