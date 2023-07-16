@@ -27,14 +27,16 @@ defmodule Botschaft.Config do
   def require_auth() do
     getter = fn config ->
       auth_config = Map.get(config, :auth, %{}) || %{}
-      admin = Map.get(auth_config, :admin_token, nil)
-      user = Map.get(auth_config, :user_token, nil)
-      case [admin, user] do
+      admin = Map.get(auth_config, "admin_token", nil)
+      user = Map.get(auth_config, "user_token", nil)
+      auth = case [admin, user] do
         [nil, nil] ->
           :not_required
         [admin_token, user_token] ->
           {:required, %{admin: admin_token, user: user_token}}
       end
+      IO.puts "got auth config #{inspect auth}: #{inspect auth_config}"
+      auth
     end
     Agent.get(__MODULE__, getter)
   end

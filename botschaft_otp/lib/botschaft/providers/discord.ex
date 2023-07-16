@@ -35,8 +35,8 @@ defmodule Botschaft.Providers.Discord do
     end
   end
 
-  def handle_cast(:reload, %{config: config}) do
-    {:noreply, %{args: config.(:discord), config: config}}
+  def handle_cast(:reload, %{get_config: get_config}) do
+    {:noreply, %{config: get_config.(:discord), get_config: get_config}}
   end
 
   defp get_destination(name, %{destinations: dests} = _config) do

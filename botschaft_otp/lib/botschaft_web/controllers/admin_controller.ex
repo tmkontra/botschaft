@@ -12,6 +12,23 @@ defmodule BotschaftWeb.AdminController do
     render(conn, :login)
   end
 
+  def login(conn, %{"admin_token" => admin_token_input}) do
+    IO.puts "admin login!"
+    case Botschaft.Config.require_auth do
+      {:required, %{admin: admin_token}} = c ->
+        IO.puts "auth required: #{inspect c}"
+        if admin_token_input == admin_token do
+            IO.puts "admin authenticated!"
+            conn
+            |> put_session(:admin, true)
+        else
+          conn
+        end
+      _ -> conn
+    end
+    |> redirect(to: "/admin")
+  end
+
   def send_message(conn, %{"destination" => destination, "message" => message}) do
     [provider, destination] = String.split(destination, ".", parts: 2)
     IO.puts "got #{destination}: #{message}"

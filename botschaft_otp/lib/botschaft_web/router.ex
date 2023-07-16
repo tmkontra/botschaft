@@ -68,13 +68,12 @@ defmodule BotschaftWeb.Router do
 
     scope "/admin" do
       get "/auth", AdminController, :denied
+      post "/auth", AdminController, :login
 
       scope "" do
         pipe_through :admin
 
         get "/", AdminController, :home
-
-        post "/auth", AdminController, :login
 
         post "/message", AdminController, :send_message
       end
