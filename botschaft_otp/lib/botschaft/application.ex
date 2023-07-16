@@ -9,6 +9,7 @@ defmodule Botschaft.Application do
   def start(_type, _args) do
     children = [
       # Start the Telemetry supervisor
+      Botschaft.Telemetry,
       BotschaftWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: Botschaft.PubSub},

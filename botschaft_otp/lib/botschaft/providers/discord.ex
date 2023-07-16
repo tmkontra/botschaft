@@ -26,11 +26,14 @@ defmodule Botschaft.Providers.Discord do
       %{"webhook_url" => webhook_url} ->
         case send_message(webhook_url, message) do
           :ok ->
+            :telemetry.execute([:botschaft, :message, :sent], %{}, %{provider: "discord", destination: name, success: true})
             {:reply, :ok, state}
           {:error, reason} ->
+            :telemetry.execute([:botschaft, :message, :sent], %{}, %{provider: "discord", destination: name, success: false})
             {:reply, {:error, reason}, state}
         end
       nil ->
+        :telemetry.execute([:botschaft, :message, :sent], %{}, %{provider: "discord", destination: name, success: false})
         {:reply, {:error, "No discord destination #{name}"}, state}
     end
   end
