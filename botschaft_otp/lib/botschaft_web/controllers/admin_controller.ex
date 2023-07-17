@@ -14,8 +14,8 @@ defmodule BotschaftWeb.AdminController do
 
   def login(conn, %{"admin_token" => admin_token_input}) do
     IO.puts "admin login!"
-    case Botschaft.Config.require_auth do
-      {:required, %{admin: admin_token}} = c ->
+    case Botschaft.Config.admin() do
+      {:ok, %{"bearer_token" => admin_token}} = c ->
         IO.puts "auth required: #{inspect c}"
         if admin_token_input == admin_token do
             IO.puts "admin authenticated!"

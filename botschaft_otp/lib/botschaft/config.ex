@@ -24,19 +24,23 @@ defmodule Botschaft.Config do
     Agent.get(__MODULE__, getter)
   end
 
-  def require_auth() do
+  def admin() do
+    getter = fn config ->
+      case Map.get(config, :admin) do
+        nil -> :none
+        %{} = admin_config -> {:ok, admin_config}
+      end
+    end
+    Agent.get(__MODULE__, getter)
+  end
+
+  def auth() do
     getter = fn config ->
       auth_config = Map.get(config, :auth, %{}) || %{}
-      admin = Map.get(auth_config, "admin_token", nil)
-      user = Map.get(auth_config, "user_token", nil)
-      auth = case [admin, user] do
-        [nil, nil] ->
-          :not_required
-        [admin_token, user_token] ->
-          {:required, %{admin: admin_token, user: user_token}}
+      case Map.get(auth_config, "bearer_token") do
+        nil -> :not_required
+        token -> {:required, token}
       end
-      IO.puts "got auth config #{inspect auth}: #{inspect auth_config}"
-      auth
     end
     Agent.get(__MODULE__, getter)
   end
@@ -54,6 +58,7 @@ defmodule Botschaft.Config do
         path: config_file,
         bindings: [
           {:auth, "auth", required: false},
+          {:admin, "admin", required: false},
           providers: "providers",
           vars: "vars",
         ]

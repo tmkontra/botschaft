@@ -16,7 +16,11 @@ defmodule BotschaftWeb.Router do
     plug :authenticate
   end
 
-  pipeline :admin do
+  pipeline :admin_enabled do
+    plug :is_admin_enabled?
+  end
+
+  pipeline :admin_auth do
     plug :require_admin, :denied
   end
 
@@ -25,15 +29,11 @@ defmodule BotschaftWeb.Router do
     case get_session(conn, :admin) do
       nil ->
         # check headers if auth is required
-        case Botschaft.Config.require_auth do
-          {:required, %{admin: admin_token, user: user_token}} = c ->
+        case Botschaft.Config.auth do
+          {:required, bearer_token} = c ->
             IO.puts "auth required: #{inspect c}"
             case get_req_header(conn, "authorization") do
-              ["Bearer " <> ^admin_token] ->
-                conn
-                |> assign(:admin, true)
-                |> assign(:authenticated, true)
-              ["Bearer " <> ^user_token] ->
+              ["Bearer " <> ^bearer_token] ->
                 conn
                 |> assign(:authenticated, true)
               _ -> conn
@@ -61,17 +61,30 @@ defmodule BotschaftWeb.Router do
     end
   end
 
+  defp is_admin_enabled?(conn, _opts) do
+    case Botschaft.Config.admin() do
+      {:ok, %{"enabled" => true}} -> conn
+      other ->
+        IO.puts "admin not enabled!: #{inspect other}"
+        conn
+        |> redirect(to: BotschaftWeb.Router.Helpers.index_path(conn, :index))
+        |> halt()
+    end
+  end
+
   scope "/", BotschaftWeb do
     pipe_through :browser
 
     get "/", IndexController, :index
 
     scope "/admin" do
+      pipe_through :admin_enabled
+
       get "/auth", AdminController, :denied
       post "/auth", AdminController, :login
 
       scope "" do
-        pipe_through :admin
+        pipe_through :admin_auth
 
         get "/", AdminController, :home
 
