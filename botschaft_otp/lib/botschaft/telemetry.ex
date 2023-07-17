@@ -20,10 +20,14 @@ defmodule Botschaft.Telemetry do
     agent
   end
 
+  def get_metrics() do
+    Agent.get(__MODULE__, &(&1[:metrics]))
+  end
+
   def handle_event(
     [:botschaft, :message, :sent],
     _measurements,
-    %{provider: provider, destination: _destination, success: success?} = metadata,
+    %{provider: provider, destination: _destination, success: success?} = _metadata,
     _config
   ) when is_boolean(success?) do
     Agent.update(__MODULE__, fn state ->
