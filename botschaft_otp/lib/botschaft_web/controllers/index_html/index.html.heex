@@ -7,10 +7,13 @@
   </div>
   <div class="mx-auto lg:w-1/2 rounded border p-4">
     <h2 class="text-lg font-bold">Server Metrics</h2>
-    <ul>
+    <table>
       <%= for {name, value} <- @metrics do %>
-      <li><%= name %>: <%= value %></li>
+      <tr>
+        <td><%= name %></td>
+        <td><%= value %></td>
+      </tr>
       <% end %>
-    </ul>
+    </table>
   </div>
 </div>

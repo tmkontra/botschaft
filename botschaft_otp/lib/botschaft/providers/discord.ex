@@ -5,6 +5,7 @@ defmodule Botschaft.Providers.Discord do
     config = get_config.(:discord)
     GenServer.start_link(__MODULE__, %{config: config, get_config: get_config}, name: __MODULE__)
   end
+
   def reload_config() do
     GenServer.cast(__MODULE__, :reload)
   end
@@ -33,7 +34,6 @@ defmodule Botschaft.Providers.Discord do
             {:reply, {:error, reason}, state}
         end
       nil ->
-        :telemetry.execute([:botschaft, :message, :sent], %{}, %{provider: "discord", destination: name, success: false})
         {:reply, {:error, "No discord destination #{name}"}, state}
     end
   end

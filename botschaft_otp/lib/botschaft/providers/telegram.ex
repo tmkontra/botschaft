@@ -33,8 +33,10 @@ defmodule Botschaft.Providers.Telegram do
         message = Map.put(message, :vars, vars)
         case send_message(message, chat_id, token) do
           :ok ->
+            :telemetry.execute([:botschaft, :message, :sent], %{}, %{provider: "telegram", destination: name, success: true})
             {:reply, :ok, state}
           {:error, reason} ->
+            :telemetry.execute([:botschaft, :message, :sent], %{}, %{provider: "telegram", destination: name, success: false})
             {:reply, {:error, reason}, state}
         end
       nil ->
