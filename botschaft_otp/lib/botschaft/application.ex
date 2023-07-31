@@ -21,6 +21,7 @@ defmodule Botschaft.Application do
       # {Botschaft.Worker, arg}
       Botschaft.Config,
       Botschaft.Providers.child_spec([[name: Botschaft.Providers.Supervisor]]),
+      {Botschaft.Topics, [&Botschaft.Config.get_topics_config/0]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

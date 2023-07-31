@@ -2,6 +2,20 @@ defmodule Botschaft.Config do
   use Agent
   alias Vapor.Provider
 
+  defmodule ProviderConfig do
+    defstruct [:destinations, :vars]
+
+    def get_destination_config(%__MODULE__{destinations: dests}, destination_name) do
+      case Map.get(dests, destination_name) do
+        nil ->
+          nil
+        config ->
+          %{"vars" => %{}}
+          |> Map.merge(config)
+      end
+    end
+  end
+
   def start_link(_args) do
     Agent.start_link(fn -> load() end, name: __MODULE__)
   end
@@ -10,18 +24,12 @@ defmodule Botschaft.Config do
     Agent.update(__MODULE__, fn _ -> load() end)
   end
 
-  def get_provider(id) when is_atom(id) do
+  def get_provider_config(id) when is_atom(id) do
     Agent.get(__MODULE__, fn config -> get_provider_from(config, id) end)
   end
 
-  def get_destinations() do
-    getter = fn config ->
-      raw = config.providers
-      for {provider, dests} <- raw do
-        {provider, Map.keys(dests)}
-      end
-    end
-    Agent.get(__MODULE__, getter)
+  def get_topics_config() do
+    Agent.get(__MODULE__, fn config -> config[:topics] end)
   end
 
   def admin() do
@@ -61,6 +69,7 @@ defmodule Botschaft.Config do
           {:admin, "admin", required: false},
           providers: "providers",
           vars: "vars",
+          topics: "topics",
         ]
       },
     ]
@@ -77,7 +86,7 @@ defmodule Botschaft.Config do
       |> Map.get(to_string(provider_id)) do
         %{} = dests ->
           shared_vars = get_provider_vars(config, provider_id)
-          %{vars: shared_vars, destinations: dests}
+          %ProviderConfig{vars: shared_vars, destinations: dests}
         nil -> nil
       end
   end
