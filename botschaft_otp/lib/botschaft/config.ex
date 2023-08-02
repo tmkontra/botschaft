@@ -24,6 +24,10 @@ defmodule Botschaft.Config do
     Agent.update(__MODULE__, fn _ -> load() end)
   end
 
+  def get_all_providers() do
+    Agent.get(__MODULE__, fn config -> Map.get(config, :providers, %{}) end)
+  end
+
   def get_provider_config(id) when is_atom(id) do
     Agent.get(__MODULE__, fn config -> get_provider_from(config, id) end)
   end
@@ -55,11 +59,13 @@ defmodule Botschaft.Config do
 
   defp load() do
     base_env = [
-      {:config_dir, "BOTSCHAFT_CONFIG_DIR", default: "./botschaft.d"}
+      {:config_dir, "BOTSCHAFT_CONFIG_DIR", default: "./botschaft.d"},
+      {:use_environment, "BOTSCHAFT_USE_ENVIRONMENT", default: false, map: &(&1 == "true")}
     ]
     base_config = Vapor.load!([%Provider.Env{bindings: base_env}])
 
-    config_file = Path.join(base_config.config_dir, "botschaft.toml")
+    {:ok, config_file} = get_config_file(base_config)
+    IO.puts "using config file: #{config_file}"
     providers = [
       %Provider.Env{},
       %Provider.File{
@@ -96,5 +102,26 @@ defmodule Botschaft.Config do
     globals = Map.get(vars, "global", %{})
     provider_vars = Map.get(vars, to_string(provider_id), %{})
     Map.merge(globals, provider_vars)
+  end
+
+  # loads the config file, optionally using environment variable expansion
+  # returns the config file path
+  defp get_config_file(base_config) do
+    config_file = Path.join(base_config.config_dir, "botschaft.toml")
+    if base_config.use_environment do
+      # need to envsubst and write to a temporary config file
+      dir = System.tmp_dir!()
+      tmp_file = Path.join(dir, "botschaft.toml")
+      cmd = "envsubst < #{config_file} > #{tmp_file}"
+      case System.shell(cmd, stderr_to_stdout: true) do
+        {_, 0}      -> {:ok, tmp_file}
+        {stdout, _} ->
+          IO.puts "Failed to render environment in config file"
+          IO.puts stdout
+          {:error, "Cannot expand environment variables in configuration file"}
+      end
+    else
+      {:ok, config_file}
+    end
   end
 end

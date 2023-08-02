@@ -4,7 +4,10 @@ defmodule BotschaftWeb.AdminController do
   def home(conn, _params) do
     # The home page is often custom made,
     # so skip the default app layout.
-    destinations = Botschaft.Config.get_destinations()
+    destinations = for {provider, dests} <- Botschaft.Config.get_all_providers(), into: %{} do
+      dest_names = Map.keys(dests)
+      {provider, dest_names}
+    end
     render(conn, :home, destinations: destinations)
   end
 
