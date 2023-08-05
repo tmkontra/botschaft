@@ -5,6 +5,8 @@ defmodule Botschaft.Application do
 
   use Application
 
+  @unrecoverable_exit Application.compile_env!(:botschaft, :unrecoverable_exit_code)
+
   @impl true
   def start(_type, _args) do
     children = [
@@ -28,10 +30,24 @@ defmodule Botschaft.Application do
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Botschaft.Supervisor]
     # start children
-    sup = Supervisor.start_link(children, opts)
-    # set config reload handler
-    System.trap_signal(:sighup, &Botschaft.Providers.reload_config/0)
-    sup
+    case Supervisor.start_link(children, opts) do
+      {:error, {:shutdown, {_term, module, reason}}} = err ->
+        case reason do
+          :no_config ->
+            IO.puts "Unable to load Botschaft configuration. This might be due to `envsusbt` not being available. Botschaft will not restart automatically."
+            System.stop(@unrecoverable_exit)
+          _ ->
+            IO.puts "exit reason: #{module} -> #{reason}"
+            err
+        end
+      {:ok, _sup} = ok ->
+        # set config reload handler
+        System.trap_signal(:sighup, &Botschaft.Providers.reload_config/0)
+        ok
+      other ->
+        IO.puts "Failed to start Botschaft: #{other}"
+        other
+    end
   end
 
   # Tell Phoenix to update the endpoint configuration

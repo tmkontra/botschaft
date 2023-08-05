@@ -118,7 +118,7 @@ defmodule Botschaft.Config do
         {stdout, _} ->
           IO.puts "Failed to render environment in config file"
           IO.puts stdout
-          {:error, "Cannot expand environment variables in configuration file"}
+          exit(:no_config)
       end
     else
       {:ok, config_file}
