@@ -49,7 +49,7 @@ defmodule BotschaftWeb.AdminController do
   def send_message(conn, %{"topic" => topic, "message" => message}) when is_binary(message) do
     IO.puts "got topic #{topic}: #{message}"
     # TODO: get provider module by name and send message
-    case Botschaft.Topics.send_message(topic, Botschaft.Message.text(message)) do
+    case Botschaft.Topics.send(topic, Botschaft.Message.text(message)) do
       {:error, reason} ->
         IO.puts "failed to send message: #{reason}"
         put_flash(conn, :error, "Failed to send message!")

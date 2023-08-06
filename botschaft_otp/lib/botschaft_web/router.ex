@@ -8,12 +8,12 @@ defmodule BotschaftWeb.Router do
     plug :put_root_layout, html: {BotschaftWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug :authenticate
+    plug :authenticate_browser
   end
 
   pipeline :api do
     plug :accepts, ["json"]
-    plug :authenticate
+    plug :authenticate_api
   end
 
   pipeline :admin_enabled do
@@ -24,7 +24,11 @@ defmodule BotschaftWeb.Router do
     plug :require_admin, :denied
   end
 
-  defp authenticate(conn, _opts) do
+  pipeline :api_auth do
+    plug :require_auth
+  end
+
+  defp authenticate_browser(conn, _opts) do
     # admin already logged in
     case get_session(conn, :admin) do
       nil ->
@@ -50,6 +54,24 @@ defmodule BotschaftWeb.Router do
     end
   end
 
+  defp authenticate_api(conn, _opts) do
+    # check headers if auth is required
+    case Botschaft.Config.auth do
+      {:required, bearer_token} = c ->
+        IO.puts "auth required: #{inspect c}"
+        case get_req_header(conn, "authorization") do
+          ["Bearer " <> ^bearer_token] ->
+            conn
+            |> assign(:authenticated, true)
+          _ -> conn
+        end
+      _ ->
+        IO.puts "no auth required"
+        conn
+        |> assign(:authenticated, true)
+    end
+  end
+
   defp require_admin(conn, denied) do
     if conn.assigns[:admin] do
       conn
@@ -72,6 +94,16 @@ defmodule BotschaftWeb.Router do
     end
   end
 
+  defp require_auth(conn, _opts) do
+    if conn.assigns[:authenticated] do
+      conn
+    else
+      conn
+      |> send_resp(403, "")
+      |> halt()
+    end
+  end
+
   scope "/", BotschaftWeb do
     pipe_through :browser
 
@@ -90,6 +122,17 @@ defmodule BotschaftWeb.Router do
 
         post "/message", AdminController, :send_message
       end
+    end
+  end
+
+  scope "/", BotschaftWeb do
+    pipe_through :api
+
+    scope "/send" do
+      pipe_through :api_auth
+
+      post "/topic/:topic", MessageController, :send_to_topic
+      post "/:provider/:destination", MessageController, :send_to_provider
     end
   end
 

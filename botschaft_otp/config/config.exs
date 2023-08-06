@@ -26,6 +26,7 @@ config :botschaft, BotschaftWeb.Endpoint,
 # at the `config/runtime.exs`.
 config :botschaft, Botschaft.Mailer, adapter: Swoosh.Adapters.Local
 
+# an exit code that will prevent restarting the botschaft server
 config :botschaft, unrecoverable_exit_code: 134
 
 # Configure esbuild (the version is required)
