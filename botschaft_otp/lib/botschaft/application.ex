@@ -37,7 +37,7 @@ defmodule Botschaft.Application do
             IO.puts "Unable to load Botschaft configuration. This might be due to `envsusbt` not being available. Botschaft will not restart automatically."
             System.stop(@unrecoverable_exit)
           _ ->
-            IO.puts "exit reason: #{module} -> #{reason}"
+            IO.puts "child exited: #{module}"
             err
         end
       {:ok, _sup} = ok ->
