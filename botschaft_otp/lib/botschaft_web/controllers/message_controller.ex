@@ -12,7 +12,7 @@ defmodule BotschaftWeb.MessageController do
         |> send_resp(500, "")
       _ ->
         conn
-        |> send_resp(202, "")
+        |> send_resp(201, "")
     end
   end
 
@@ -25,7 +25,7 @@ defmodule BotschaftWeb.MessageController do
         |> send_resp(500, "")
       _ ->
         conn
-        |> send_resp(202, "")
+        |> send_resp(201, "")
     end
   end
 end

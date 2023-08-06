@@ -44,7 +44,7 @@ defmodule Botschaft.Providers.Discord do
     IO.puts "sending message to discord: #{text} @ #{webhook_url}"
     body = %{content: text}
     # https://discord.com/developers/docs/resources/webhook#execute-webhook
-    resp = Req.post!(webhook_url, json: body, params: [wait: "true"])
+    resp = Botschaft.Http.Client.post(webhook_url, body, [wait: "true"])
     if resp.status != 200 do
       {:error, "Failed to send message: #{inspect resp}"}
     else

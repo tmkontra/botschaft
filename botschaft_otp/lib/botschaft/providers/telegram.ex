@@ -3,7 +3,7 @@ defmodule Botschaft.Providers.Telegram do
 
   @moduledoc false
 
-  @r Req.new(base_url: "https://api.telegram.org")
+  @r "https://api.telegram.org"
 
   def start_link([get_provider_config]) do
     config = get_provider_config.(:telegram)
@@ -45,14 +45,19 @@ defmodule Botschaft.Providers.Telegram do
   end
 
   defp send_message(text, chat_id, bot_token) do
-    url = "/bot#{bot_token}/sendMessage"
+    url = url_for_bot(bot_token)
     # https://core.telegram.org/bots/api#sendmessage
-    resp = Req.get!(@r, url: url, params: [chat_id: chat_id, text: text])
+    resp = Botschaft.Http.Client.get(url, [chat_id: chat_id, text: text])
     if resp.status != 200 do
       {:error, "Failed to send message: #{inspect resp}"}
     else
       :ok
     end
+  end
+
+  defp url_for_bot(bot_token) do
+    path = "/bot#{bot_token}/sendMessage"
+    @r <> path
   end
 
 end
