@@ -1,18 +1,18 @@
 <div class="px-4 py-10 sm:px-6 sm:py-28 lg:px-8 xl:px-28 xl:py-32 w-full">
   <div class="mx-auto lg:w-1/2 mb-6">
-    <img src="https://raw.githubusercontent.com/tmkontra/botschaft/master/docs/logo.png"/>
+    <img src="https://raw.githubusercontent.com/tmkontra/botschaft/master/docs/logo.png" />
     <h1 class="mt-2 flex items-center text-sm font-semibold leading-6">
-      A universal messaging and notifications gateway.  
+      A universal messaging and notifications gateway.
     </h1>
   </div>
   <div class="mx-auto lg:w-1/2 rounded border p-4">
     <h2 class="text-lg font-bold">Server Metrics</h2>
     <table>
       <%= for {name, value} <- @metrics do %>
-      <tr>
-        <td><%= name %></td>
-        <td><%= value %></td>
-      </tr>
+        <tr>
+          <td><%= name %></td>
+          <td><%= value %></td>
+        </tr>
       <% end %>
     </table>
   </div>

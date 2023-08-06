@@ -9,6 +9,7 @@ defmodule Botschaft.Config do
       case Map.get(dests, destination_name) do
         nil ->
           nil
+
         config ->
           %{"vars" => %{}}
           |> Map.merge(config)
@@ -43,17 +44,20 @@ defmodule Botschaft.Config do
         %{} = admin_config -> {:ok, admin_config}
       end
     end
+
     Agent.get(__MODULE__, getter)
   end
 
   def auth() do
     getter = fn config ->
       auth_config = Map.get(config, :auth, %{}) || %{}
+
       case Map.get(auth_config, "bearer_token") do
         nil -> :not_required
         token -> {:required, token}
       end
     end
+
     Agent.get(__MODULE__, getter)
   end
 
@@ -62,10 +66,12 @@ defmodule Botschaft.Config do
       {:config_dir, "BOTSCHAFT_CONFIG_DIR", default: "./botschaft.d"},
       {:use_environment, "BOTSCHAFT_USE_ENVIRONMENT", default: false, map: &(&1 == "true")}
     ]
+
     base_config = Vapor.load!([%Provider.Env{bindings: base_env}])
 
     {:ok, config_file} = get_config_file(base_config)
-    IO.puts "using config file: #{config_file}"
+    IO.puts("using config file: #{config_file}")
+
     providers = [
       %Provider.Env{},
       %Provider.File{
@@ -75,9 +81,9 @@ defmodule Botschaft.Config do
           {:admin, "admin", required: false},
           providers: "providers",
           vars: "vars",
-          topics: "topics",
+          topics: "topics"
         ]
-      },
+      }
     ]
 
     # If values could not be found we raise an exception and halt the boot
@@ -89,12 +95,14 @@ defmodule Botschaft.Config do
 
   defp get_provider_from(config, provider_id) when is_map(config) and is_atom(provider_id) do
     case Map.get(config, :providers, %{})
-      |> Map.get(to_string(provider_id)) do
-        %{} = dests ->
-          shared_vars = get_provider_vars(config, provider_id)
-          %ProviderConfig{vars: shared_vars, destinations: dests}
-        nil -> nil
-      end
+         |> Map.get(to_string(provider_id)) do
+      %{} = dests ->
+        shared_vars = get_provider_vars(config, provider_id)
+        %ProviderConfig{vars: shared_vars, destinations: dests}
+
+      nil ->
+        nil
+    end
   end
 
   defp get_provider_vars(config, provider_id) when is_map(config) and is_atom(provider_id) do
@@ -108,16 +116,20 @@ defmodule Botschaft.Config do
   # returns the config file path
   defp get_config_file(base_config) do
     config_file = Path.join(base_config.config_dir, "botschaft.toml")
+
     if base_config.use_environment do
       # need to envsubst and write to a temporary config file
       dir = System.tmp_dir!()
       tmp_file = Path.join(dir, "botschaft.toml")
       cmd = "envsubst < #{config_file} > #{tmp_file}"
+
       case System.shell(cmd, stderr_to_stdout: true) do
-        {_, 0}      -> {:ok, tmp_file}
+        {_, 0} ->
+          {:ok, tmp_file}
+
         {stdout, _} ->
-          IO.puts "Failed to render environment in config file"
-          IO.puts stdout
+          IO.puts("Failed to render environment in config file")
+          IO.puts(stdout)
           exit(:no_config)
       end
     else

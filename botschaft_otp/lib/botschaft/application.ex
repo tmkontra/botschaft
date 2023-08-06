@@ -34,18 +34,24 @@ defmodule Botschaft.Application do
       {:error, {:shutdown, {_term, module, reason}}} = err ->
         case reason do
           :no_config ->
-            IO.puts "Unable to load Botschaft configuration. This might be due to `envsusbt` not being available. Botschaft will not restart automatically."
+            IO.puts(
+              "Unable to load Botschaft configuration. This might be due to `envsusbt` not being available. Botschaft will not restart automatically."
+            )
+
             System.stop(@unrecoverable_exit)
+
           _ ->
-            IO.puts "child exited: #{module}"
+            IO.puts("child exited: #{module}")
             err
         end
+
       {:ok, _sup} = ok ->
         # set config reload handler
         System.trap_signal(:sighup, &Botschaft.Providers.reload_config/0)
         ok
+
       other ->
-        IO.puts "Failed to start Botschaft: #{other}"
+        IO.puts("Failed to start Botschaft: #{other}")
         other
     end
   end
@@ -57,5 +63,4 @@ defmodule Botschaft.Application do
     BotschaftWeb.Endpoint.config_change(changed, removed)
     :ok
   end
-
 end

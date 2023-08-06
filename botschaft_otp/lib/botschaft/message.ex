@@ -19,7 +19,7 @@ defmodule Botschaft.Message do
 
   defp render(text, template, vars) do
     vars = Map.put(vars, "message", text)
-    IO.puts "Rendering message with #{inspect vars}"
+    IO.puts("Rendering message with #{inspect(vars)}")
     Solid.render!(template, vars) |> to_string
   end
 end

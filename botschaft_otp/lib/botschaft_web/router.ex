@@ -33,40 +33,52 @@ defmodule BotschaftWeb.Router do
     case get_session(conn, :admin) do
       nil ->
         # check headers if auth is required
-        case Botschaft.Config.auth do
+        case Botschaft.Config.auth() do
           {:required, bearer_token} = c ->
-            IO.puts "auth required: #{inspect c}"
+            IO.puts("auth required: #{inspect(c)}")
+
             case get_req_header(conn, "authorization") do
               ["Bearer " <> ^bearer_token] ->
                 conn
                 |> assign(:authenticated, true)
-              _ -> conn
+
+              _ ->
+                conn
             end
+
           _ ->
-            IO.puts "no auth required"
+            IO.puts("no auth required")
+
             conn
             |> assign(:admin, true)
             |> assign(:authenticated, true)
         end
-      _ -> conn
-      |> assign(:admin, true)
-      |> assign(:authenticated, true)
+
+      _ ->
+        conn
+        |> assign(:admin, true)
+        |> assign(:authenticated, true)
     end
   end
 
   defp authenticate_api(conn, _opts) do
     # check headers if auth is required
-    case Botschaft.Config.auth do
+    case Botschaft.Config.auth() do
       {:required, bearer_token} = c ->
-        IO.puts "auth required: #{inspect c}"
+        IO.puts("auth required: #{inspect(c)}")
+
         case get_req_header(conn, "authorization") do
           ["Bearer " <> ^bearer_token] ->
             conn
             |> assign(:authenticated, true)
-          _ -> conn
+
+          _ ->
+            conn
         end
+
       _ ->
-        IO.puts "no auth required"
+        IO.puts("no auth required")
+
         conn
         |> assign(:authenticated, true)
     end
@@ -85,9 +97,12 @@ defmodule BotschaftWeb.Router do
 
   defp is_admin_enabled?(conn, _opts) do
     case Botschaft.Config.admin() do
-      {:ok, %{"enabled" => true}} -> conn
+      {:ok, %{"enabled" => true}} ->
+        conn
+
       other ->
-        IO.puts "admin not enabled!: #{inspect other}"
+        IO.puts("admin not enabled!: #{inspect(other)}")
+
         conn
         |> redirect(to: BotschaftWeb.Router.Helpers.index_path(conn, :index))
         |> halt()

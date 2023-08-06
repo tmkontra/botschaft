@@ -20,15 +20,23 @@ defmodule Botschaft.Topics do
     {:ok, state}
   end
 
-  def handle_call({:message, %{topic: topic_name, message: message}}, _from, %{config: %{} = config} = state) do
-    reply = case Map.get(config, topic_name) do
-      nil ->
-        {:error, "No such topic configured"}
-      %{"destinations" => destinations} ->
-        dispatch_message(destinations, message)
-      _ ->
-        {:error, "Topic misconfigured"}
-    end
+  def handle_call(
+        {:message, %{topic: topic_name, message: message}},
+        _from,
+        %{config: %{} = config} = state
+      ) do
+    reply =
+      case Map.get(config, topic_name) do
+        nil ->
+          {:error, "No such topic configured"}
+
+        %{"destinations" => destinations} ->
+          dispatch_message(destinations, message)
+
+        _ ->
+          {:error, "Topic misconfigured"}
+      end
+
     {:reply, reply, state}
   end
 
@@ -44,7 +52,7 @@ defmodule Botschaft.Topics do
 
   defp send_message(destination, message) do
     [provider, destination] = String.split(destination, ".", parts: 2)
-    IO.puts "sending to #{destination}"
+    IO.puts("sending to #{destination}")
     # TODO: get provider module by name and send message
     Botschaft.Providers.send_message(provider, destination, message)
   end

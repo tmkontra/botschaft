@@ -6,9 +6,10 @@ defmodule Botschaft.Telemetry do
       metrics: %{
         "botschaft.message" => 0,
         "botschaft.message.error" => 0,
-        "botschaft.message.success" => 0,
+        "botschaft.message.success" => 0
       }
     }
+
     agent = Agent.start_link(fn -> data end, name: __MODULE__)
     id = {__MODULE__, "botschaft.message.sent", self()}
     :telemetry.attach(id, [:botschaft, :message, :sent], &Botschaft.Telemetry.handle_event/4, nil)
@@ -16,16 +17,18 @@ defmodule Botschaft.Telemetry do
   end
 
   def get_metrics() do
-    Agent.get(__MODULE__, &(&1[:metrics]))
+    Agent.get(__MODULE__, & &1[:metrics])
   end
 
   def handle_event(
-    [:botschaft, :message, :sent],
-    _measurements,
-    %{provider: provider, destination: _destination, success: success?} = _metadata,
-    _config
-  ) when is_boolean(success?) do
+        [:botschaft, :message, :sent],
+        _measurements,
+        %{provider: provider, destination: _destination, success: success?} = _metadata,
+        _config
+      )
+      when is_boolean(success?) do
     success? = if success?, do: "success", else: "error"
+
     Agent.update(__MODULE__, fn state ->
       state
       |> inc("botschaft.message")

@@ -24,7 +24,6 @@ defmodule Botschaft.Provider do
       def handle_cast(:reload, %{get_config: get_config}) do
         {:noreply, %{config: get_config.(), get_config: get_config}}
       end
-
     end
   end
 end

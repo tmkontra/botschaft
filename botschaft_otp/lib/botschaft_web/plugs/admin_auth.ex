@@ -2,7 +2,6 @@ defmodule BotschaftWeb.Plugs.AdminAuth do
   import Plug.Conn
 
   def init(_) do
-
   end
 
   def call(%Plug.Conn{params: %{"locale" => loc}} = conn, _default) do
