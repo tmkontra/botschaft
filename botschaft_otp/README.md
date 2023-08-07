@@ -9,9 +9,9 @@
 - [x] Declarative Configuration
   - [x] Hot-Reloading Configuration (without restart)
 - [x] Liquid templating
-- [ ] Topics: declarative composition of multiple provider destinations
+- [x] Topics: declarative composition of multiple provider destinations
 - [ ] Dynamic structured message pass-through
-- [ ] HTTP API
+- [x] HTTP API
 
 _Supported Providers_
 
@@ -20,7 +20,7 @@ _Supported Providers_
   - [ ] Telegram HTML Templating
 - [x] Discord
   - [ ] Discord Embeds Templating
-- [ ] Slack
+- [x] Slack
   - [ ] Slack BlockKit Templating
 
 
