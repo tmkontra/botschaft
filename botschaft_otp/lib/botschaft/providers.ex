@@ -18,7 +18,8 @@ defmodule Botschaft.Providers do
     [
       Botschaft.Providers.Telegram,
       Botschaft.Providers.Discord,
-      Botschaft.Providers.Slack
+      Botschaft.Providers.Slack,
+      Botschaft.Providers.Twilio,
     ]
   end
 

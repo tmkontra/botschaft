@@ -22,8 +22,10 @@ _Supported Providers_
   - [ ] Discord Embeds Templating
 - [x] Slack
   - [ ] Slack BlockKit Templating
-
-
+- [x] Twilio
+  - [ ] MessagingServiceSid instead of "From"
+  - [ ] Multiple "To" recipients (dynamic recipients?)
+  - [ ] Media messages
 
 
 ### Development

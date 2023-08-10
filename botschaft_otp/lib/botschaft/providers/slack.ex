@@ -41,7 +41,7 @@ defmodule Botschaft.Providers.Slack do
 
   def send_webhook(url, message) do
     reply =
-      Botschaft.Http.Client.post(url, %{
+      Botschaft.Http.Client.post_json(url, %{
         "text" => message
       })
 
